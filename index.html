@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우리아이자립펀드 계산기 | 우리 아이 만 18세에 얼마 받을까</title>
+<meta name="description" content="우리아이자립펀드 예상 수령액 계산기. 가구 소득 구간, 부모 납입액, 수익률을 넣으면 정부 지원금과 만기 예상 금액, 일반 계좌 대비 비과세 효과를 바로 계산합니다.">
+<meta name="keywords" content="우리아이자립펀드, 우리아이자립펀드 계산기, 자립펀드 수령액, 아이펀드, 정부 매칭 펀드, 중위소득">
+<meta property="og:title" content="우리아이자립펀드 계산기">
+<meta property="og:description" content="우리 집 소득 구간이면 정부가 얼마 보태주고, 만 18세에 얼마가 될까? 30초 계산.">
+<meta property="og:type" content="website">
+
+<link rel="canonical" href="https://leewn2gh.github.io/woori-fund-calc/">
+<script type="application/ld+json">
+{
+ "@context":"https://schema.org","@type":"FAQPage",
+ "mainEntity":[
+  {"@type":"Question","name":"우리아이자립펀드 가입 대상은?","acceptedAnswer":{"@type":"Answer","text":"정부 발표 기준 2026년 9월 이후 출생아 중 기준 중위소득 150% 이하 가구가 정부 지원 대상입니다. 세부 기준은 최종 공고에서 확정됩니다."}},
+  {"@type":"Question","name":"정부 지원금은 얼마인가요?","acceptedAnswer":{"@type":"Answer","text":"중위소득 50% 이하 가구는 연 120만원 정액, 50~150% 가구는 부모 납입액에 맞춰 연 최대 100만원 매칭 지원이 발표됐습니다."}},
+  {"@type":"Question","name":"만 18세에 7천만원 받을 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"매년 200만원씩 19년간 연 6% 수익률을 가정한 정부 추산치입니다. 펀드 상품이라 보장액이 아니며 실제 금액은 운용 성과에 따라 달라집니다."}}
+ ]
+}
+</script>
+<style>
+:root{--bg:#fbf8f3;--card:#fff;--ink:#1f2328;--sub:#6b6f76;--line:#e7e2d9;--accent:#2f7d5b;--accent2:#e9f4ee;--warn:#9a5b00}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+main{max-width:680px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:8px 0 4px;letter-spacing:-.02em}
+.lead{color:var(--sub);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:.95rem}
+label:first-child{margin-top:0}
+.hint{font-weight:400;color:var(--sub);font-size:.82rem}
+input,select{width:100%;padding:12px;font-size:1rem;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{padding:10px 4px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:.88rem;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.big{font-size:2.2rem;font-weight:800;color:var(--accent);letter-spacing:-.03em;margin:4px 0}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+.kv:last-child{border:0}
+.kv b{font-variant-numeric:tabular-nums}
+.note{background:var(--accent2);border-radius:10px;padding:12px 14px;font-size:.88rem;margin-top:12px}
+.warn{color:var(--warn);font-size:.85rem;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+details summary{cursor:pointer;font-weight:600}
+.ad{border:1px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:16px}
+h2{font-size:1.15rem;margin:0 0 8px}
+.faq h3{font-size:1rem;margin:16px 0 4px}
+.faq p{margin:0;color:#3a3e44;font-size:.93rem}
+footer{color:var(--sub);font-size:.78rem;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+  <h1>우리아이자립펀드 계산기</h1>
+  <p class="lead">우리 집 소득 구간이면 정부가 얼마를 보태고, 아이가 만 18세가 되면 얼마가 될까요?</p>
+
+  <section class="card" aria-label="입력">
+    <label>아이 출생일 <span class="hint">2026년 9월 이후 출생아가 지원 대상</span></label>
+    <input type="date" id="birth" value="2026-10-01">
+    <div class="warn" id="birthWarn" hidden></div>
+
+    <label>가구 소득 (기준 중위소득 대비)</label>
+    <div class="seg" id="tier">
+      <button data-v="low">50% 이하</button>
+      <button data-v="mid" class="on">50~150%</button>
+      <button data-v="high">150% 초과</button>
+    </div>
+    <div class="hint" style="margin-top:6px">참고: 3인 가구 중위소득 50%가 월 약 268만 원 수준이라고 보도됐습니다.</div>
+
+    <div class="row">
+      <div>
+        <label>부모 연 납입액 <span class="hint">만원, 최대 200</span></label>
+        <input type="number" id="parent" min="0" max="200" step="10" value="100">
+      </div>
+      <div>
+        <label>연 수익률 <span class="hint">%</span></label>
+        <input type="number" id="rate" min="0" max="15" step="0.5" value="6">
+      </div>
+    </div>
+
+    <details style="margin-top:14px">
+      <summary>고급 설정 (확정 전 가정값)</summary>
+      <label>매칭 비율 <span class="hint">부모 1원당 정부 지원, 50~150% 구간</span></label>
+      <select id="match">
+        <option value="1" selected>1 : 1 (가정)</option>
+        <option value="0.5">1 : 0.5</option>
+        <option value="2">1 : 2</option>
+      </select>
+      <label>적립 횟수 <span class="hint">년, 정부 추산 기준 19회</span></label>
+      <input type="number" id="years" min="1" max="19" value="19">
+    </details>
+  </section>
+
+  <section class="card" aria-live="polite">
+    <div class="hint">만기 예상 금액 (세전·비과세 가정)</div>
+    <div class="big" id="total">-</div>
+    <div class="kv"><span>정부 지원 합계</span><b id="gov">-</b></div>
+    <div class="kv"><span>부모 납입 합계</span><b id="par">-</b></div>
+    <div class="kv"><span>운용 수익</span><b id="gain">-</b></div>
+    <div class="kv"><span>일반 과세 계좌였다면 (15.4%)</span><b id="taxed">-</b></div>
+    <div class="kv"><span>비과세로 아끼는 금액</span><b id="saved">-</b></div>
+    <div class="kv"><span>만기 시점 (만 18세)</span><b id="due">-</b></div>
+    <div class="note" id="msg"></div>
+  </section>
+
+  <!-- 광고/제휴 슬롯 1: 쿠팡 파트너스 배너 코드를 여기에 붙여넣기 (대가성 문구 필수) -->
+  <div class="ad" id="ad1">광고 영역</div>
+
+  <section class="card">
+    <details>
+      <summary>연도별 적립표 보기</summary>
+      <table id="tbl"><thead><tr><th>나이</th><th>올해 납입</th><th>누적 원금</th><th>평가액</th></tr></thead><tbody></tbody></table>
+    </details>
+  </section>
+
+  <section class="card faq">
+    <h2>자주 묻는 질문</h2>
+    <h3>누가 지원 대상인가요?</h3>
+    <p>정부 발표 기준 2026년 9월 이후 출생아 중 기준 중위소득 150% 이하 가구입니다. 정부 지원은 만 18세까지 이어집니다.</p>
+    <h3>정부는 얼마를 보태주나요?</h3>
+    <p>중위소득 50% 이하는 부모 납입과 관계없이 연 120만 원 정액, 50~150% 구간은 부모 납입액에 맞춰 연 최대 100만 원 매칭입니다. 매칭 비율은 아직 공고 전이라 계산기에서는 1:1로 가정했습니다.</p>
+    <h3>정말 7천만 원이 되나요?</h3>
+    <p>정부가 매년 200만 원씩 19년간 연 6% 수익률을 가정해 낸 추산치입니다. 펀드라 원금·수익이 보장되지 않고 운용 성과에 따라 달라집니다.</p>
+    <h3>세금은요?</h3>
+    <p>전용 계좌에서 생기는 이자·배당소득을 전액 비과세하는 방안이 발표됐습니다. 위 계산의 "비과세로 아끼는 금액"은 일반 계좌에서 매년 수익에 15.4%가 과세된다고 단순 가정한 비교값입니다.</p>
+    <h3>언제 가입하나요?</h3>
+    <p>2027년 예산안에 신규 사업으로 편성돼 2027년 출시가 추진 중입니다. 국회 심의와 세부 공고에 따라 내용이 바뀔 수 있습니다.</p>
+  </section>
+
+  <!-- 광고/제휴 슬롯 2 -->
+  <div class="ad" id="ad2">광고 영역</div>
+
+  <footer>
+    본 계산기는 2026년 10월 정부 발표·보도 내용을 바탕으로 한 참고용 추정치이며 실제 상품 조건과 다를 수 있습니다. 투자 권유가 아닙니다.<br>
+    <!-- 쿠팡 파트너스 사용 시 아래 문구 유지 -->
+    이 사이트는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.
+  </footer>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var tier = 'mid';
+  var won = function(manwon){
+    var v = Math.round(manwon);
+    if (v >= 10000) { var eok = Math.floor(v/10000), rest = v%10000; return eok+'억 '+(rest? rest.toLocaleString('ko-KR')+'만 원':'원'); }
+    return v.toLocaleString('ko-KR')+'만 원';
+  };
+  document.querySelectorAll('#tier button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#tier button').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on'); tier = b.dataset.v; calc();
+    });
+  });
+  ['birth','parent','rate','match','years'].forEach(function(id){ $(id).addEventListener('input', calc); });
+
+  function govPerYear(p){
+    if (tier === 'low') return 120;
+    if (tier === 'mid') return Math.min(100, p * parseFloat($('match').value));
+    return 0;
+  }
+
+  function calc(){
+    var p = Math.max(0, Math.min(200, parseFloat($('parent').value) || 0));
+    var r = Math.max(0, parseFloat($('rate').value) || 0) / 100;
+    var n = Math.max(1, Math.min(19, parseInt($('years').value) || 19));
+    var g = govPerYear(p);
+    var bal = 0, balT = 0, principal = 0, rows = '';
+    for (var i = 0; i < n; i++){
+      bal += g + p; balT += g + p; principal += g + p;
+      bal *= (1 + r);
+      balT *= (1 + r * (1 - 0.154));
+      rows += '<tr><td>'+i+'세</td><td>'+won(g+p)+'</td><td>'+won(principal)+'</td><td>'+won(bal)+'</td></tr>';
+    }
+    $('tbl').querySelector('tbody').innerHTML = rows;
+    $('total').textContent = won(bal);
+    $('gov').textContent = won(g*n);
+    $('par').textContent = won(p*n);
+    $('gain').textContent = won(bal - principal);
+    $('taxed').textContent = won(balT);
+    $('saved').textContent = won(bal - balT);
+
+    var bd = new Date($('birth').value);
+    var warn = $('birthWarn');
+    if (!isNaN(bd)) {
+      var due = new Date(bd); due.setFullYear(bd.getFullYear()+18);
+      $('due').textContent = due.getFullYear()+'년 '+(due.getMonth()+1)+'월';
+      if (bd < new Date('2026-09-01')) { warn.hidden = false; warn.textContent = '발표 기준 2026년 9월 1일 이전 출생아는 정부 지원 대상이 아닐 수 있습니다.'; }
+      else warn.hidden = true;
+    }
+
+    var msg;
+    if (tier === 'high') msg = '중위소득 150% 초과 가구는 발표 기준 정부 지원 대상이 아닙니다. 위 금액은 부모 납입만으로 계산했습니다.';
+    else if (tier === 'low') msg = '중위소득 50% 이하 가구는 부모가 한 푼도 안 넣어도 정부가 매년 120만 원을 넣어줍니다. 부모 납입 0으로도 계산해 보세요.';
+    else msg = p*parseFloat($('match').value) < 100
+      ? '정부 매칭을 최대로 받으려면 부모 납입을 연 '+Math.ceil(100/parseFloat($('match').value))+'만 원 이상으로 맞추세요 (매칭 비율 가정 기준).'
+      : '정부 매칭 한도(연 100만 원)를 꽉 채우고 있습니다.';
+    $('msg').textContent = msg;
+  }
+  calc();
+})();
+</script>
+</body>
+</html>
